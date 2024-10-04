@@ -1,0 +1,88 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+}
+
+.main-title {
+  font-size: 2rem;
+  color: black;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  color: black;
+  margin-bottom: 20px;
+}
+
+.conversation-box {
+  border: 1px solid gray;
+  border-radius: 5px;
+  padding: 20px;
+  width: 80%;
+  height: 300px;
+  overflow-y: auto;
+  background-color: #f8f8f8;
+  margin-bottom: 20px;
+}
+
+.message {
+  display: flex;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 80%;
+}
+
+.user-message {
+  background-color: #f99595; /* Match the button color */
+  margin-left: auto;
+  text-align: right;
+  padding: 10px;
+  border-radius: 5px;
+  color: white; /* Text color for contrast */
+}
+
+.bot-message {
+  background-color: #ececec;
+  margin-right: auto;
+}
+
+.query-input-container {
+  display: flex;
+  justify-content: space-between;
+  width: 80%;
+}
+
+.query-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid gray;
+  margin-right: 10px;
+}
+
+.ask-button {
+  width: 60px;
+  height: 60px;
+  background-color: #f99595; /* Button color */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ask-button:hover {
+  background-color: #f7cece;
+}
+
+.ask-button::before {
+  content: "\2B06"; /* Unicode for up arrow */
+  font-size: 20px;
+}
