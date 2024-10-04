@@ -1,0 +1,87 @@
+.container {
+  max-width: 800px; /* Increased max-width for better spacing */
+  margin: 50px auto; /* Adjusted the margin for positioning */
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+h1 {
+  font-size: 28px; /* Reduced size for better fit */
+  font-weight: bold;
+  color: #b22222; /* Match the red color seen in image */
+}
+
+h2 {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.chat-box {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #fff;
+  font-family: "Arial", sans-serif; /* Set to default system font */
+}
+
+.user-message {
+  background-color: #d9534f; /* Changed to a stronger red for user messages */
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 5px 0;
+  max-width: 80%;
+  align-self: flex-end;
+}
+
+.bot-message {
+  background-color: #f1f1f1;
+  color: black;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 5px 0;
+  max-width: 80%;
+  align-self: flex-start;
+}
+
+.input-container {
+  display: flex;
+  align-items: center; /* Ensure input and button are vertically centered */
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ccc; /* Add a border to match reference */
+  border-radius: 5px;
+  background-color: #fff; /* Match input box background color */
+}
+
+textarea {
+  width: 90%; /* Expanded to fill more space */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  resize: none;
+}
+
+.send-button {
+  background-color: #b22222; /* Adjusted button color to a darker red */
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px; /* Space between textarea and button */
+}
+
+.send-button:hover {
+  background-color: #8b0000; /* Darker hover effect */
+}
