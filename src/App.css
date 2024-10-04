@@ -1,17 +1,19 @@
 .container {
-  max-width: 800px; /* Increased max-width for better spacing */
-  margin: 50px auto; /* Adjusted the margin for positioning */
+  max-width: 800px;
+  margin: 50px auto;
   padding: 20px;
-  background-color: #f9f9f9;
+  background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  height: 600px; /* Fixed height for the container */
 }
 
 h1 {
-  font-size: 28px; /* Reduced size for better fit */
+  font-size: 28px;
   font-weight: bold;
-  color: #b22222; /* Match the red color seen in image */
+  color: #b22222;
 }
 
 h2 {
@@ -21,67 +23,75 @@ h2 {
 }
 
 .chat-box {
-  max-height: 300px;
-  overflow-y: auto;
-  margin-bottom: 20px;
+  flex-grow: 1; /* Allows chat-box to take up most of the space */
+  overflow-y: auto; /* Enable scrolling */
+  padding: 10px;
+  background-color: #f9f9f9;
   border: 1px solid #ccc;
   border-radius: 5px;
-  padding: 10px;
-  background-color: #fff;
-  font-family: "Arial", sans-serif; /* Set to default system font */
+  margin-bottom: 20px; /* Space between chat-box and input */
+  display: flex;
+  flex-direction: column;
 }
 
+/* User messages (on the right, white background) */
 .user-message {
-  background-color: #d9534f; /* Changed to a stronger red for user messages */
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  margin: 5px 0;
-  max-width: 80%;
-  align-self: flex-end;
+  background-color: white;
+  color: black;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 10px 0;
+  max-width: 60%;
+  align-self: flex-end; /* Align to the right */
+  border: 1px solid #ccc;
+  word-wrap: break-word; /* Ensure long text breaks properly */
+  text-align: left;
 }
 
+/* Bot messages (on the left, gray background) */
 .bot-message {
   background-color: #f1f1f1;
   color: black;
-  padding: 10px;
-  border-radius: 5px;
-  margin: 5px 0;
-  max-width: 80%;
-  align-self: flex-start;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 10px 0;
+  max-width: 60%;
+  align-self: flex-start; /* Align to the left */
+  border: 1px solid #ccc;
+  word-wrap: break-word; /* Ensure long text breaks properly */
+  text-align: left;
 }
 
 .input-container {
   display: flex;
-  align-items: center; /* Ensure input and button are vertically centered */
   justify-content: space-between;
-  margin-top: 10px;
+  align-items: center;
   padding: 10px;
-  border: 1px solid #ccc; /* Add a border to match reference */
+  background-color: #fff;
+  border: 1px solid #ccc;
   border-radius: 5px;
-  background-color: #fff; /* Match input box background color */
 }
 
-textarea {
-  width: 90%; /* Expanded to fill more space */
-  padding: 10px;
+.message-input {
+  width: 80%; /* Larger input field */
+  padding: 15px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  resize: none;
+  outline: none;
 }
 
 .send-button {
-  background-color: #b22222; /* Adjusted button color to a darker red */
+  background-color: black;
   color: white;
-  padding: 10px 20px;
+  padding: 10px;
   font-size: 16px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-left: 10px; /* Space between textarea and button */
+  width: 80px;
 }
 
 .send-button:hover {
-  background-color: #8b0000; /* Darker hover effect */
+  background-color: #333;
 }
