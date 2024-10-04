@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";  // Import axios
 import "./App.css";
 
 function App() {
@@ -6,20 +7,34 @@ function App() {
   const [messages, setMessages] = useState([]);
   const chatBoxRef = useRef(null); // Ref for the chat box to handle scroll
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (input.trim()) {
-      // Add user's message
+      // Add user's message to chat
       setMessages((prevMessages) => [
         ...prevMessages,
         { sender: "user", text: input },
       ]);
 
-      // Simulate a chatbot response (replace this with your API call)
-      const botResponse = "This is a response to: " + input; // Placeholder for the chatbot response
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { sender: "bot", text: botResponse },
-      ]);
+      try {
+        // Make a POST request to the Flask API
+        const response = await axios.post('http://127.0.0.1:5000/api', {
+          input: input,  // Send the user's input
+        });
+
+        // Handle the response from the API
+        const botResponse = response.data.response || "An error occurred. Please try again.";
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: "bot", text: botResponse },
+        ]);
+      } catch (error) {
+        // Handle error in case of failure
+        console.error("API call failed:", error);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: "bot", text: "Error: Unable to fetch response." },
+        ]);
+      }
 
       setInput(""); // Clear input field
     }
