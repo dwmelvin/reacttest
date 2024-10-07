@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";  // Import axios
+import axios from "axios"; // Import axios
 import "./App.css";
 
 function App() {
@@ -16,9 +16,13 @@ function App() {
       ]);
 
       try {
+        // Prepare the conversation history to send to the server
+        const history = messages.map((msg) => [msg.sender, msg.text]);
+
         // Make a POST request to the Flask API
-        const response = await axios.post('http://127.0.0.1:5000/api', {
+        const response = await axios.post("http://127.0.0.1:5000/api", {
           input: input,  // Send the user's input
+          history: history, // Send the conversation history
         });
 
         // Handle the response from the API

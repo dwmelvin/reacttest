@@ -19,6 +19,7 @@ function App() {
         // Make API call to Flask backend
         const response = await axios.post("http://localhost:5000/get_response", {
           input: input,
+          history: messages.map(msg => [msg.sender, msg.text]) 
         });
 
         // Get the response from the backend

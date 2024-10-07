@@ -3,33 +3,31 @@ from flask_cors import CORS
 import WorkingRAG1  # Import WorkingRAG1 script
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Assuming WorkingRAG1.py contains a function named `get_answer`
-@app.route("/api", methods=["POST"])
+@app.route("/api", methods=["POST"])  # Change the endpoint to '/api'
 def api():
-    # Get the JSON data sent from the frontend
     data = request.json
-    user_input = data.get('input')  # Extract the 'input' from the request
+    user_input = data.get('input')
+    history = data.get('history', [])
 
-    # Log the received data for debugging
     print(f"Received input: {user_input}")
+    print(f"Received history: {history}")
 
     if user_input:
         try:
-            # Process the input using a function from WorkingRAG1.py
-            response = WorkingRAG1.get_answer(user_input)  # Call the function in WorkingRAG1.py
+            response_generator = WorkingRAG1.predict(user_input, history, None)
+            response = ""
+            for partial_response in response_generator:
+                response = partial_response
+            print(f"Generated response: {response}")
         except Exception as e:
-            # Log the error and set an error message
             print(f"Error while processing input: {e}")
-            response = "An error occurred while processing your request."
+            response = f"An error occurred while processing your request: {e}"
     else:
         response = "No input provided."
 
-    # Log the response for debugging
     print(f"Sending response: {response}")
-
-    # Return the response as JSON
     return jsonify({"response": response})
 
 # Root route to check if the server is running
