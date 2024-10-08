@@ -1,17 +1,47 @@
+import requests
 from langchain.memory import ConversationBufferMemory
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from operator import itemgetter
 
-# Initialize the language model and memory for conversation
-llm = ChatOpenAI(
-    streaming=True,
-    base_url="http://localhost:1234/v1",  # Ensure this matches the LM Studio port
-    api_key="lm-studio",  # Placeholder for local LM Studio instance
-    temperature=0,
-    model="lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF"  # Use the model available in LM Studio
-)
+# Configuration: Set the model name and base URL here
+MODEL_NAME = "lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF"
+BASE_URL = "http://localhost:1234/v1"  # Ensure this matches the LM Studio port
+
+# Check if the model is loaded in LM Studio
+def is_model_loaded(base_url, model_name):
+    try:
+        # Directly check the loaded models
+        response = requests.get(f"{base_url}/models")
+        if response.status_code == 200:
+            models = response.json()
+            print(f"Loaded models: {models}")
+            
+            # Ensure proper handling of the response format
+            if 'data' in models and isinstance(models['data'], list):
+                return any(model_name in model.get('id', '') or model_name in model.get('name', '') for model in models['data'])
+            else:
+                print("Unexpected models response format.")
+        else:
+            print(f"Failed to fetch models list: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"Failed to connect to LM Studio: {e}")
+    return False
+
+# Initialize the language model if the model is loaded
+llm = None
+if is_model_loaded(BASE_URL, MODEL_NAME):
+    try:
+        llm = ChatOpenAI(
+            streaming=True,
+            base_url=BASE_URL,  # Use the configured base URL
+            api_key="lm-studio",  # Placeholder for local LM Studio instance
+            temperature=0,
+            model=MODEL_NAME  # Use the configured model
+        )
+    except Exception as e:
+        print(f"Failed to initialize the model: {e}")
 
 # Create a prompt template
 template = """
@@ -34,6 +64,10 @@ chat_prompt = ChatPromptTemplate.from_messages(
 memory = ConversationBufferMemory(memory_key="history", return_messages=True)
 
 def predict(question, history, request):
+    if llm is None:
+        yield "The model is not initialized or not loaded in LM Studio. Please check the server settings and ensure the model is loaded."
+        return
+
     print("Debug: Entered predict function")
     print(f"Debug: Received question: {question}")
     print(f"Debug: Received history: {history}")

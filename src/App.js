@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios"; // Import axios
 import "./App.css";
 
 function App() {
@@ -19,21 +18,46 @@ function App() {
         // Prepare the conversation history to send to the server
         const history = messages.map((msg) => [msg.sender, msg.text]);
 
-        // Make a POST request to the Flask API
-        const response = await axios.post("http://127.0.0.1:5000/api", {
-          input: input,  // Send the user's input
-          history: history, // Send the conversation history
+        // Make a POST request to the Flask API using fetch to handle streaming
+        const response = await fetch("http://127.0.0.1:5000/api", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ input: input, history: history }),
         });
 
-        // Handle the response from the API
-        const botResponse = response.data.response || "An error occurred. Please try again.";
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { sender: "bot", text: botResponse },
-        ]);
+        if (!response.ok) {
+          throw new Error("Network response was not ok.");
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let partialResponse = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          // Decode the stream chunk and accumulate it
+          partialResponse += decoder.decode(value, { stream: true });
+
+          // Parse and extract the "data: " part
+          const parts = partialResponse.split("\n\n");
+          parts.forEach((part) => {
+            if (part.startsWith("data: ")) {
+              const message = part.replace("data: ", "").trim();
+              setMessages((prevMessages) => [
+                ...prevMessages.filter((msg) => msg.sender !== "bot"),
+                { sender: "bot", text: message },
+              ]);
+            }
+          });
+
+          partialResponse = ""; // Clear for the next chunks
+        }
       } catch (error) {
-        // Handle error in case of failure
-        console.error("API call failed:", error);
+        console.error("Error:", error);
         setMessages((prevMessages) => [
           ...prevMessages,
           { sender: "bot", text: "Error: Unable to fetch response." },

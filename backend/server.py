@@ -1,34 +1,28 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, Response, jsonify
 from flask_cors import CORS
 import WorkingRAG1  # Import WorkingRAG1 script
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-@app.route("/api", methods=["POST"])  # Change the endpoint to '/api'
+@app.route("/api", methods=["POST"])
 def api():
     data = request.json
     user_input = data.get('input')
     history = data.get('history', [])
 
-    print(f"Received input: {user_input}")
-    print(f"Received history: {history}")
+    def generate_response():
+        if user_input:
+            try:
+                response_generator = WorkingRAG1.predict(user_input, history, None)
+                for partial_response in response_generator:
+                    yield f"data: {partial_response}\n\n"  # SSE requires 'data: ' prefix
+            except Exception as e:
+                yield f"data: An error occurred: {str(e)}\n\n"
+        else:
+            yield "data: No input provided.\n\n"
 
-    if user_input:
-        try:
-            response_generator = WorkingRAG1.predict(user_input, history, None)
-            response = ""
-            for partial_response in response_generator:
-                response = partial_response
-            print(f"Generated response: {response}")
-        except Exception as e:
-            print(f"Error while processing input: {e}")
-            response = f"An error occurred while processing your request: {e}"
-    else:
-        response = "No input provided."
-
-    print(f"Sending response: {response}")
-    return jsonify({"response": response})
+    return Response(generate_response(), content_type='text/event-stream')
 
 # Root route to check if the server is running
 @app.route("/", methods=["GET"])
