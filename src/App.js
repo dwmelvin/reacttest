@@ -14,6 +14,9 @@ function App() {
         { sender: "user", text: input },
       ]);
 
+      // Clear input field right after sending the message
+      setInput("");
+
       try {
         // Prepare the conversation history to send to the server
         const history = messages.map((msg) => [msg.sender, msg.text]);
@@ -63,8 +66,13 @@ function App() {
           { sender: "bot", text: "Error: Unable to fetch response." },
         ]);
       }
+    }
+  };
 
-      setInput(""); // Clear input field
+  // Handle key press events in the input field
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleSend();
     }
   };
 
@@ -98,6 +106,7 @@ function App() {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyPress} // Add onKeyDown event listener
           placeholder="Ask anything about the Code of Alabama..."
           className="message-input"
         />

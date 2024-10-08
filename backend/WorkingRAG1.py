@@ -37,7 +37,7 @@ if is_model_loaded(BASE_URL, MODEL_NAME):
             streaming=True,
             base_url=BASE_URL,  # Use the configured base URL
             api_key="lm-studio",  # Placeholder for local LM Studio instance
-            temperature=0,
+            temperature=0.7,
             model=MODEL_NAME  # Use the configured model
         )
     except Exception as e:
