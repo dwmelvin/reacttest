@@ -1,82 +1,110 @@
-import React, { useState, useEffect, useRef } from "react";
-import "./App.css";
+import React, { useState, useEffect, useRef } from 'react';
+import './App.css';
 
-function App() {
+const StreamingChat = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const chatBoxRef = useRef(null); // Ref for the chat box to handle scroll
+  const [isTyping, setIsTyping] = useState(false);
+  const chatBoxRef = useRef(null);
 
   const handleSend = async () => {
-    if (input.trim()) {
-      // Add user's message to chat
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { sender: "user", text: input },
-      ]);
+    if (!input.trim()) return;
 
-      // Clear input field right after sending the message
-      setInput("");
+    const userMessage = { sender: "user", text: input };
+    const botMessage = { sender: "bot", text: "", isStreaming: true };
+    
+    setMessages(prev => [...prev, userMessage, botMessage]);
+    setInput("");
+    setIsTyping(true);
 
-      try {
-        // Prepare the conversation history to send to the server
-        const history = messages.map((msg) => [msg.sender, msg.text]);
+    try {
+      const history = messages.map(msg => [msg.sender, msg.text]);
+      const response = await fetch("http://127.0.0.1:5000/api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input, history }),
+      });
 
-        // Make a POST request to the Flask API using fetch to handle streaming
-        const response = await fetch("http://127.0.0.1:5000/api", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ input: input, history: history }),
+      if (!response.ok) throw new Error("Network response was not ok.");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullResponse = "";
+
+      const updateText = (newText) => {
+        setMessages(prev => {
+          const updated = [...prev];
+          const lastMsg = updated[updated.length - 1];
+          if (lastMsg.sender === 'bot') {
+            lastMsg.text = newText;
+          }
+          return updated;
         });
+      };
 
-        if (!response.ok) {
-          throw new Error("Network response was not ok.");
-        }
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let partialResponse = "";
+        buffer += decoder.decode(value, { stream: true });
+        
+        while (buffer.includes('\n')) {
+          const newlineIndex = buffer.indexOf('\n');
+          const line = buffer.slice(0, newlineIndex).trim();
+          buffer = buffer.slice(newlineIndex + 1);
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          // Decode the stream chunk and accumulate it
-          partialResponse += decoder.decode(value, { stream: true });
-
-          // Parse and extract the "data: " part
-          const parts = partialResponse.split("\n\n");
-          parts.forEach((part) => {
-            if (part.startsWith("data: ")) {
-              const message = part.replace("data: ", "").trim();
-              setMessages((prevMessages) => [
-                ...prevMessages.filter((msg) => msg.sender !== "bot"),
-                { sender: "bot", text: message },
-              ]);
+          if (line.startsWith('data: ')) {
+            const content = line.slice(6).trim(); // Remove 'data: ' prefix
+            if (content && content !== fullResponse) {
+              // Check if it's a new paragraph or bullet point
+              if (content.startsWith('•') && !fullResponse.endsWith('\n')) {
+                fullResponse += '\n';
+              } else if (fullResponse.endsWith('\n') && !content.startsWith('•')) {
+                fullResponse += '\n';
+              }
+              
+              fullResponse = content;
+              updateText(fullResponse);
+              await new Promise(resolve => setTimeout(resolve, 20)); // Adjust timing as needed
             }
-          });
-
-          partialResponse = ""; // Clear for the next chunks
+          }
         }
-      } catch (error) {
-        console.error("Error:", error);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { sender: "bot", text: "Error: Unable to fetch response." },
-        ]);
       }
+
+      // Process any remaining buffer
+      if (buffer.startsWith('data: ')) {
+        const content = buffer.slice(6).trim();
+        if (content && content !== fullResponse) {
+          fullResponse = content;
+          updateText(fullResponse);
+        }
+      }
+
+    } catch (error) {
+      console.error("Error:", error);
+      setMessages(prev => {
+        const updated = [...prev];
+        const lastMsg = updated[updated.length - 1];
+        if (lastMsg.sender === 'bot') {
+          lastMsg.text = "Error: Unable to fetch response.";
+          lastMsg.isStreaming = false;
+        }
+        return updated;
+      });
+    } finally {
+      setIsTyping(false);
+      setMessages(prev => {
+        const updated = [...prev];
+        const lastMsg = updated[updated.length - 1];
+        if (lastMsg.sender === 'bot') {
+          lastMsg.isStreaming = false;
+        }
+        return updated;
+      });
     }
   };
 
-  // Handle key press events in the input field
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      handleSend();
-    }
-  };
-
-  // Scroll to bottom whenever new messages are added
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
@@ -87,35 +115,44 @@ function App() {
     <div className="container">
       <h1>Ask ALI</h1>
       <h2>Code of Alabama AI Assistant Beta</h2>
-
-      {/* Chat box */}
+      
       <div className="chat-box" ref={chatBoxRef}>
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={msg.sender === "user" ? "user-message" : "bot-message"}
+            className={`${msg.sender}-message`}
+            style={{
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word'
+            }}
           >
             {msg.text}
+            {msg.isStreaming && (
+              <span className="typing-indicator"></span>
+            )}
           </div>
         ))}
       </div>
-
-      {/* Input container */}
+      
       <div className="input-container">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyPress} // Add onKeyDown event listener
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="Ask anything about the Code of Alabama..."
           className="message-input"
         />
-        <button onClick={handleSend} className="send-button">
+        <button
+          onClick={handleSend}
+          disabled={isTyping}
+          className="send-button"
+        >
           Ask
         </button>
       </div>
     </div>
   );
-}
+};
 
-export default App;
+export default StreamingChat;
