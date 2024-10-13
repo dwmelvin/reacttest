@@ -32,6 +32,7 @@ h2 {
   margin-bottom: 20px; /* Space between chat-box and input */
   display: flex;
   flex-direction: column;
+  white-space: pre-wrap;
 }
 
 /* User messages (on the right, white background) */
